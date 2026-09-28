@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>News Search</title>
+
+    <style>
+        /* =========================
+           RESET
+        ========================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        header {
+            background: linear-gradient(135deg, #111827, #2563eb);
+            color: white;
+            padding: 55px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 44px;
+            margin-bottom: 12px;
+        }
+
+        header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        /* =========================
+           MAIN CONTAINER
+        ========================= */
+
+        .container {
+            width: min(1200px, 92%);
+            margin: auto;
+        }
+
+        /* =========================
+           SEARCH AREA
+        ========================= */
+
+        .search-section {
+            background: white;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 16px;
+            border: 1px solid #ddd;
+            border-radius: 9px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        #searchInput:focus {
+            border-color: #2563eb;
+        }
+
+        #searchButton {
+            padding: 16px 28px;
+            border: none;
+            border-radius: 9px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #searchButton:hover {
+            background: #1d4ed8;
+        }
+
+        /* =========================
+           FILTERS
+        ========================= */
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .filter {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .filter label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .filter input,
+        .filter select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            background: white;
+        }
+
+        /* =========================
+           STATUS
+        ========================= */
+
+        #status {
+            text-align: center;
+            margin: 25px 0;
+            font-size: 17px;
+        }
+
+        .loading {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        /* =========================
+           NEWS GRID
+        ========================= */
+
+        #newsContainer {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            padding-bottom: 50px;
+        }
+
+        /* =========================
+           NEWS CARD
+        ========================= */
+
+        .news-card {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+            transition: 0.25s ease;
+        }
+
+        .news-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+        }
+
+        .news-image {
+            width: 100%;
+            height: 210px;
+            object-fit: cover;
+            background: #ddd;
+        }
+
+        .news-content {
+            padding: 20px;
+        }
+
+        .news-source {
+            color: #2563eb;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .news-title {
+            font-size: 20px;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .news-description {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .news-date {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .read-more {
+            display: inline-block;
+            text-decoration: none;
+            background: #111827;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 7px;
+            transition: 0.2s;
+        }
+
+        .read-more:hover {
+            background: #2563eb;
+        }
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            background: #111827;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 900px) {
+
+            #newsContainer {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            header h1 {
+                font-size: 32px;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            #searchButton {
+                width: 100%;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            #newsContainer {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header>
+        <div class="container">
+            <h1>📰 News Search</h1>
+            <p>Search the latest news from around the world</p>
+        </div>
+    </header>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main class="container">
+
+        <!-- SEARCH -->
+
+        <section class="search-section">
+
+            <form id="searchForm">
+
+                <div class="search-box">
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search news... e.g. Tesla"
+                        autocomplete="off"
+                        required
+                    >
+
+                    <button type="submit" id="searchButton">
+                        Search
+                    </button>
+
+                </div>
+
+
+                <!-- FILTERS -->
+
+                <div class="filters">
+
+                    <div class="filter">
+                        <label for="fromDate">
+                            From
+                        </label>
+
+                        <input
+                            type="date"
+                            id="fromDate"
+                        >
+                    </div>
+
+
+                    <div class="filter">
+                        <label for="toDate">
+                            To
+                        </label>
+
+                        <input
+                            type="date"
+                            id="toDate"
+                        >
+                    </div>
+
+
+                    <div class="filter">
+                        <label for="language">
+                            Language
+                        </label>
+
+                        <select id="language">
+
+                            <option value="en">
+                                English
+                            </option>
+
+                            <option value="es">
+                                Spanish
+                            </option>
+
+                            <option value="fr">
+                                French
+                            </option>
+
+                            <option value="de">
+                                German
+                            </option>
+
+                            <option value="it">
+                                Italian
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- STATUS -->
+
+        <div id="status"></div>
+
+
+        <!-- NEWS -->
+
+        <section id="newsContainer"></section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+        <p>News Search © 2026</p>
+    </footer>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
+
+    <script>
+
+        // ==========================================
+        // NEWS API
+        // ==========================================
+
+        const API_KEY =
+            "d0a71d72372345beb6ded58313cc7dc0";
+
+        const API_URL =
+            "https://newsapi.org/v2/everything";
+
+
+        // ==========================================
+        // ELEMENTS
+        // ==========================================
+
+        const searchForm =
+            document.getElementById("searchForm");
+
+        const searchInput =
+            document.getElementById("searchInput");
+
+        const fromDate =
+            document.getElementById("fromDate");
+
+        const toDate =
+            document.getElementById("toDate");
+
+        const language =
+            document.getElementById("language");
+
+        const newsContainer =
+            document.getElementById("newsContainer");
+
+        const status =
+            document.getElementById("status");
+
+
+        // ==========================================
+        // SEARCH EVENT
+        // ==========================================
+
+        searchForm.addEventListener(
+            "submit",
+            function(event) {
+
+                event.preventDefault();
+
+                const query =
+                    searchInput.value.trim();
+
+                if (!query) {
+
+                    showError(
+                        "Please enter a search term."
+                    );
+
+                    return;
+                }
+
+                getNews(query);
+            }
+        );
+
+
+        // ==========================================
+        // GET NEWS
+        // ==========================================
+
+        async function getNews(query) {
+
+            newsContainer.innerHTML = "";
+
+            status.innerHTML = `
+                <p class="loading">
+                    Loading news...
+                </p>
+            `;
+
+
+            try {
+
+                const params =
+                    new URLSearchParams();
+
+
+                // Search query
+
+                params.append(
+                    "q",
+                    query
+                );
+
+
+                // Sort newest first
+
+                params.append(
+                    "sortBy",
+                    "publishedAt"
+                );
+
+
+                // Number of articles
+
+                params.append(
+                    "pageSize",
+                    "30"
+                );
+
+
+                // API key
+
+                params.append(
+                    "apiKey",
+                    API_KEY
+                );
+
+
+                // Optional FROM date
+
+                if (fromDate.value) {
+
+                    params.append(
+                        "from",
+                        fromDate.value
+                    );
+                }
+
+
+                // Optional TO date
+
+                if (toDate.value) {
+
+                    params.append(
+                        "to",
+                        toDate.value
+                    );
+                }
+
+
+                // Optional language
+
+                if (language.value) {
+
+                    params.append(
+                        "language",
+                        language.value
+                    );
+                }
+
+
+                // Make API request
+
+                const response =
+                    await fetch(
+                        `${API_URL}?${params.toString()}`
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                // API error
+
+                if (
+                    !response.ok ||
+                    data.status !== "ok"
+                ) {
+
+                    throw new Error(
+                        data.message ||
+                        "Unable to fetch news."
+                    );
+                }
+
+
+                // No articles
+
+                if (
+                    !data.articles ||
+                    data.articles.length === 0
+                ) {
+
+                    status.innerHTML = `
+                        <p>
+                            No news found for
+                            <strong>
+                                ${escapeHTML(query)}
+                            </strong>
+                        </p>
+                    `;
+
+                    return;
+                }
+
+
+                // Show result count
+
+                status.innerHTML = `
+                    <p>
+                        Found
+                        <strong>
+                            ${data.totalResults}
+                        </strong>
+                        results for
+                        <strong>
+                            ${escapeHTML(query)}
+                        </strong>
+                    </p>
+                `;
+
+
+                // Display articles
+
+                displayNews(
+                    data.articles
+                );
+
+            }
+
+
+            catch(error) {
+
+                console.error(error);
+
+                showError(
+                    error.message ||
+                    "Something went wrong."
+                );
+            }
+        }
+
+
+        // ==========================================
+        // DISPLAY NEWS
+        // ==========================================
+
+        function displayNews(articles) {
+
+            newsContainer.innerHTML = "";
+
+
+            articles.forEach(
+                function(article) {
+
+                    const card =
+                        document.createElement("article");
+
+                    card.className =
+                        "news-card";
+
+
+                    const image =
+                        article.urlToImage ||
+                        "https://via.placeholder.com/600x400?text=No+Image";
+
+
+                    const title =
+                        article.title ||
+                        "No title available";
+
+
+                    const description =
+                        article.description ||
+                        "No description available.";
+
+
+                    const source =
+                        article.source &&
+                        article.source.name
+                            ? article.source.name
+                            : "Unknown source";
+
+
+                    const date =
+                        article.publishedAt
+                            ? formatDate(
+                                article.publishedAt
+                            )
+                            : "Unknown date";
+
+
+                    const url =
+                        article.url || "#";
+
+
+                    card.innerHTML = `
+
+                        <img
+                            class="news-image"
+                            src="${escapeAttribute(image)}"
+                            alt="${escapeAttribute(title)}"
+                            loading="lazy"
+                            onerror="
+                                this.src =
+                                'https://via.placeholder.com/600x400?text=No+Image'
+                            "
+                        >
+
+                        <div class="news-content">
+
+                            <div class="news-source">
+                                ${escapeHTML(source)}
+                            </div>
+
+                            <h2 class="news-title">
+                                ${escapeHTML(title)}
+                            </h2>
+
+                            <p class="news-description">
+                                ${escapeHTML(description)}
+                            </p>
+
+                            <div class="news-date">
+                                ${date}
+                            </div>
+
+                            <a
+                                class="read-more"
+                                href="${escapeAttribute(url)}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Read Article →
+                            </a>
+
+                        </div>
+                    `;
+
+
+                    newsContainer.appendChild(card);
+
+                }
+            );
+        }
+
+
+        // ==========================================
+        // DATE FORMAT
+        // ==========================================
+
+        function formatDate(dateString) {
+
+            const date =
+                new Date(dateString);
+
+
+            return date.toLocaleString(
+                undefined,
+                {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+        }
+
+
+        // ==========================================
+        // ERROR
+        // ==========================================
+
+        function showError(message) {
+
+            status.innerHTML = `
+                <p class="error">
+                    ${escapeHTML(message)}
+                </p>
+            `;
+        }
+
+
+        // ==========================================
+        // HTML ESCAPING
+        // ==========================================
+
+        function escapeHTML(value) {
+
+            const div =
+                document.createElement("div");
+
+            div.textContent =
+                value ?? "";
+
+            return div.innerHTML;
+        }
+
+
+        function escapeAttribute(value) {
+
+            return escapeHTML(value)
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+        }
+
+
+        // ==========================================
+        // DEFAULT SEARCH
+        // ==========================================
+
+        searchInput.value = "Tesla";
+
+        getNews("Tesla");
+
+    </script>
+
+</body>
+</html>
